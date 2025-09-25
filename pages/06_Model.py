@@ -3,7 +3,7 @@ import pandas as pd
 
 st.set_page_config(page_title="모델 설명", layout="wide")
 
-st.title("📊 모델 ")
+st.title("⚛ 모델 ")
 st.markdown("\n")
 st.markdown("\n")
 

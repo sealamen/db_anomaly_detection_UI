@@ -12,7 +12,7 @@ from streamlit_autorefresh import st_autorefresh
 # -----------------------------
 # 페이지 설정
 # -----------------------------
-st.set_page_config(page_title="DB 모니터링 대시보드", layout="wide")
+st.set_page_config(page_title="📈 DB 모니터링 대시보드", layout="wide")
 
 # 사이드바: 새로고침 주기
 with st.sidebar:

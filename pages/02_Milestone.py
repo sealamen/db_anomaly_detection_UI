@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("프로젝트 마일스톤")
+st.title("🗓️ 프로젝트 마일스톤")
 
 # 이미지 표시
 st.image("assets/MILESTONE.PNG", caption="Milestone Roadmap", use_container_width=True)

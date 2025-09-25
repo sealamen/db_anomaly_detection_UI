@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 
-st.title("개발환경")
+st.title("⚙️ 개발 환경")
 
 
 # Library
