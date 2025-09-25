@@ -1,50 +1,59 @@
 import streamlit as st
+import pandas as pd
 
-st.set_page_config(page_title="한계점 및 보완점", layout="wide")
+st.set_page_config(page_title="⚠️ 발생 이슈", layout="wide")
 
-st.title("⚠️ 한계점 및 보완점")
-
+st.title("⚠️ 발생 이슈")
 st.markdown("""
-이번 프로젝트는 운영 DB 환경 접근과 일부 Oracle 기능 제한으로 인해 다음과 같은 한계점이 존재하지만,
-다양한 시뮬레이션과 모델 튜닝을 통해 보완하였습니다.
+위의 모델을 통해 실제 실시간 탐지를 구현했으나, 이상치 탐지 X
+- 현업 기반의 데이터 및 이상치를 생성하여 작업했다보니, 운영 DB 가 아닌 상태에서는 실시간 이상치 탐지가 안됨
+- 아래 그래프처럼, 정상 범위를 벗어나지 못함. 세션 40개, 초당 SELECT, INSERT 200개 정도의 부하를 줘도 정상으로 판별됨
 """)
 
-st.subheader("1️⃣ 실무 데이터 사용 불가")
-st.markdown("""
-- 운영 DB 접근 불가로 인해 실제 트랜잭션/쿼리 로그 기반 데이터 수집 제한
-- **보완**: Python 시뮬레이션 및 Oracle 뷰 기반 샘플 데이터를 사용하여 유사 시나리오 생성
-- 시뮬레이션 데이터에 인위적 이상치 삽입으로 모델 학습/평가 가능
-""")
+col1, col2 = st.columns(2)  # 2개의 컬럼 생성
 
-st.subheader("2️⃣ UI 툴 선택 제한")
-st.markdown("""
-- Streamlit을 사용하여 대시보드를 구현했으나, Grafana/PowerBI 등 상용 UI 툴 직접 활용 불가
-- **보완**: Streamlit 기반으로 기능적 요구사항 대부분 구현
-  - KPI 카드, 메인 모니터링 차트, Drill-down, Alert.log 통합 등
-""")
+with col1:
+    st.image("assets/CPU_USAGE_PER_SEC_detection.png",
+             caption="이상치 탐지 결과(CPU_USAGE_PER_SEC)",
+             use_container_width=True)
 
-st.subheader("3️⃣ Alert.log 및 쿼리 관련 데이터 수집 한계")
-st.markdown("""
-- 실제 운영 환경에서는 alert.log와 SQL 성능 로그를 통합 활용 가능하지만 테스트 환경에서는 전체 로그 접근 불가
-- **보완**: 랜덤 이벤트 및 주요 ORA 에러를 시뮬레이션하여 `alert_count` 생성, 이상 상황 재현
-""")
+with col2:
+    st.image("assets/DB_TIME_PER_SEC_detection.png",
+             caption="이상치 탐지 결과(DB_TIME_PER_SEC)",
+             use_container_width=True)
 
-st.subheader("4️⃣ Statspack/AWR 사용 제한")
-st.markdown("""
-- AWR/Statspack 스냅샷은 라이선스 및 환경 제약으로 직접 수집 불가
-- **보완**: V$ 뷰 기반 시계열 지표 추출 + 시뮬레이션 데이터 병합으로 학습/테스트 데이터 확보
-""")
 
-st.subheader("5️⃣ 비지도 학습 모델 한계")
-st.markdown("""
-- Isolation Forest, AutoEncoder, One-class SVM 등은 정상 패턴 학습 후 이상치 탐지 가능하지만 특정 패턴 변화에 민감할 수 있음
-- **보완**: 하이퍼파라미터 튜닝, 여러 모델 앙상블, 임계치 조정으로 탐지 성능 개선
-""")
+# --- 1. 데이터 테이블 ---
+data = {
+    "구분": ["학습 정상", "평가 이상치", "실제 부하"],
+    "DB_TIME_PER_SEC": [1472, 2499, 2036],
+    "CPU_USAGE_PER_SEC": [1.51, 0.52, 153],
+    "LOGICAL_READS_PER_SEC": [395, 164, 894772],
+    "ANOMALY_YN": ["N", "Y", "N"],
+    "평가 결과": ["정상", "이상치 탐지 성공", "이상치 탐지 실패"]
+}
 
-st.subheader("6️⃣ 시계열 복합 이상 시나리오 미반영")
-st.markdown("""
-- 일부 복합 이벤트(예: CPU 급등 + Lock wait 폭증 + TPS 급증) 시나리오가 실제보다 단순화됨
-- **보완**: 시뮬레이션 단계에서 다변량 이상 패턴 주입 및 테스트, 필요시 LSTM/TCN 등 시계열 모델 적용 가능
-""")
+df = pd.DataFrame(data)
 
-st.info("핵심 요약: 실무 데이터 접근 제한 및 일부 Oracle 기능 사용 불가가 한계점, 시뮬레이션/뷰 데이터와 모델 튜닝으로 보완 완료")
+st.markdown("### '실제 부하' 이상치 탐지 실패 이유")
+st.markdown("""
+- DB_TIME 컬럼의 학습용 정상 데이터, 모델 평가 시 사용된 이상치 데이터, DB 부하를 통한 조회 데이터의 MAX 값 비교 
+""")
+st.table(df)
+
+# --- 2. 이상치 탐지 실패 이유 ---
+st.markdown("""
+1. **학습 데이터 범위 제한**
+- CPU, LOGICAL_READS, DB_TIME 등 정상 범위가 너무 낮아 모델이 극단치를 경험하지 못함.
+- 실제 개발 현장이 아니다보니, 논문에서 정상으로 표시하는 정도에 차이가 있음 
+
+2. **모델 구조 특성**
+- One-Class SVM, Isolation Forest, Autoencoder 모두 학습 데이터 분포 기반 탐지.
+- 학습 범위를 벗어난 실제 부하 데이터는 정상으로 판단될 수 있음.
+
+3. **스케일링 및 전처리 문제**
+- 일부 컬럼 누락 시 0으로 채워 입력이 왜곡됨.
+- 실제 부하 데이터는 학습 데이터 대비 값이 매우 커서 스케일링 후 MSE나 SVM 판단에 영향을 줌.
+
+> 💡 핵심: 학습 데이터의 정상 범위를 실제 부하 수준까지 확장해야 모델이 이상치를 정확히 탐지할 수 있음.
+""")

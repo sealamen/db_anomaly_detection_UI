@@ -28,8 +28,8 @@ env_data = [
 df_env = pd.DataFrame(env_data, columns=["라이브러리", "설명"])
 
 # Streamlit 테이블로 표시
-st.table(df_env)
-
+df_env.index = df_env.index + 1
+st.dataframe(df_env)
 
 st.markdown("\n\n")
 

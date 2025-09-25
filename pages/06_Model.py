@@ -1,119 +1,136 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
 
+st.set_page_config(page_title="모델 설명", layout="wide")
 
-# st.title("모델")
-#
-# # 1. 사용 모델 소개
-# st.header("1️⃣ 사용 모델 소개")
-# st.markdown("""
-# 본 프로젝트에서는 **DB 성능 이상 탐지**를 위해 여러 비지도 학습 모델을 사용합니다.
-#
-# - **Isolation Forest**
-#   - 이상치 탐지에 특화된 앙상블 기반 모델
-#   - 데이터 분포를 기반으로 이상치 점수 계산
-# - **AutoEncoder (AE)**
-#   - 입력 데이터 재구성 오류를 기반으로 이상 탐지
-#   - 정상 패턴 학습 후, 재구성 오차가 큰 샘플을 이상치로 판단
-# - **One-class SVM**
-#   - 정상 데이터의 경계 학습 후, 경계 밖 샘플을 이상치로 판단
-#
-# 자세한 내용은 [Wiki 링크](https://www.notion.so/2767eb9760b780d4b7dfd9d7c2bc59c8?pvs=21) 참고
-# """)
-#
-# # 2. 모델 성능 평가 방법
-# st.header("2️⃣ 모델 성능 평가 방법")
-# st.markdown("""
-# - **평가 지표** : Recall 기반 평가
-# - **이상 판단 기준** : 여러 모델 예측 결과의 과반수 이상이 이상치인 경우 최종 이상 판단
-# - **혼동행렬(Confusion Matrix)**를 통해 평가
-#   - True Positive, False Positive, True Negative, False Negative 분석
-# - 자세한 내용은 [Wiki 링크](https://www.notion.so/2777eb9760b780419ccef94f4d13764c?pvs=21) 참고
-# """)
-#
-# # 3. 모델 하이퍼파라미터 튜닝
-# st.header("3️⃣ 모델 하이퍼파라미터 튜닝")
-# st.markdown("""
-# - 각 모델별 주요 하이퍼파라미터 튜닝
-#     - Isolation Forest : n_estimators, max_samples, contamination 등
-#     - AutoEncoder : hidden layer 크기, epoch 수, learning rate 등
-#     - One-class SVM : kernel, nu, gamma 등
-# - 튜닝 방법 및 실험 결과는 [Wiki 링크](https://www.notion.so/2777eb9760b7809f97c5db88c52d4b74?pvs=21) 참고
-# """)
-#
-# st.title("모델")
+st.title("📊 모델 ")
+st.markdown("\n")
+st.markdown("\n")
 
-# -----------------------------
-# 모델 카드
-# -----------------------------
-st.header("1️⃣ 사용 모델 소개")
+# --- 탭 생성 ---
+tab1, tab2, tab3 = st.tabs(["1. 학습 모델 설명", "2. 평가 기준", "3. 하이퍼파라미터 튜닝"])
 
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.subheader("Isolation Forest")
+with tab1:
+    st.markdown("\n")
     st.markdown("""
-    - 이상치 탐지 특화
-    - 분포 기반 점수 계산
-    - 장점: 빠르고 비지도 학습 가능
+    ### 1. 모델 목록
+
     """)
 
-with col2:
-    st.subheader("AutoEncoder")
+with tab2:
+    st.markdown("\n")
     st.markdown("""
-    - 입력 데이터 재구성 오류 기반 이상치 탐지
-    - 정상 패턴 학습 후 재구성 오차로 판단
+    ### 2. 평가 기준 
+    """)
+    st.markdown("\n")
+
+    st.markdown("""
+    ##### 이상치 판단 기준
+    - 세 모델의 과반수 투표를 통해 이상치 판단
+    - ex :  IF → 1 , OCSVM → 0, AE → 0
+        - Final Alert: 1
     """)
 
-with col3:
-    st.subheader("One-class SVM")
+    st.markdown("\n")
     st.markdown("""
-    - 정상 데이터 경계 학습 후 경계 밖 샘플 이상치 판단
-    - Kernel 기반 유연한 탐지 가능
+    ##### 모델 평가 기준 : 성능평가지표 사용 
+    - 운영 환경에서는 **Recall(재현율)을 우선**, 그다음 Precision 확인, 최종적으로 F1-score를 지표로 삼는 게 가장 합리적
+        - Recall : 실제 이상 중에서 얼마나 많이 잡았는가
+        - **DB 이상탐지는 실제 이상을 놓치는 것이 더욱 위험하므로, FN 을 최소화하는 것이 중요**
+        - FP(정상인데 이상으로 판단)이 많아지는 것이 단점이겠지만, DB 모니터링에서 FP 는 보통 로그/알람으로 끝나기 때문에, 조금 많은 FP 는 감수 가능
+            - **따라서 FP도 많이 고려해야하는 F1-Score 보다 Recall 을 보는 것이 더 중요**
+    - 정답을 맞추는 환경을 구현하기 위해, 이상치 데이터에 ANOMALY 여부를 추가해서 평가
     """)
 
-st.markdown("[자세한 내용 Wiki 링크](https://www.notion.so/2767eb9760b780d4b7dfd9d7c2bc59c8?pvs=21)")
+with tab3:
+    st.markdown("\n")
+    st.markdown("""
+    ### 3. 하이퍼파라미터 튜닝 
+    - GridSearch 를 통한 하이퍼파라미터 최적화, 학습 데이터 증가(2만건 → 20만건)
+    - 이상치에 변화를 주어 2%, 5%, 50%, 98% 테스트도 진행 (모델의 강건성과 적용 범위 검증)
+        - AutoEncoder 제외 크게 수치가 흔들리는 모델은 없었음
+        - DB 이상탐지 특성 상, 이상치가 크게 벗어날 경우가 없긴함
+    """)
 
-# -----------------------------
-# 모델 성능 표
-# -----------------------------
-st.header("2️⃣ 모델 성능 평가")
-st.markdown("Recall 기반 평가, 이상 판단 기준: 과반수 이상")
+    st.markdown("\n")
+    st.markdown("\n")
+    # 데이터프레임 생성
+    data = {
+        "Anomaly %": ["2%", "", "",
+                      "", "", "",
+                      "", "", "",
+                      "", "", ""],
+        "Model": ["One-class SVM", "", "",
+                  "Isolation Forest", "", "",
+                  "AutoEncoder", "", "",
+                  "Final Alert", "", ""],
+        "Condition": ["튜닝 전 (20K)", "하이퍼파라미터튜닝", "학습 데이터 증가 (200K)",
+                      "튜닝 전 (20K)", "하이퍼파라미터튜닝", "학습 데이터 증가 (200K)",
+                      "튜닝 전 (20K)", "하이퍼파라미터튜닝", "학습 데이터 증가 (200K)",
+                      "튜닝 전 (20K)", "하이퍼파라미터튜닝", "학습 데이터 증가 (200K)"],
+        "Accuracy": ["0.9876", "0.9878 ▲0.0003", "0.9514 ▼0.0362",
+                     "0.9741", "0.9464 ▼0.0278", "0.9585 ▼0.0157",
+                     "0.9952", "0.9966 ▲0.0014", "0.9969 ▲0.0018",
+                     "0.9902", "0.9883 ▼0.0019", "0.9924 ▲0.0022"],
+        "Precision": ["0.6205", "0.6258 ▲0.0053", "0.2886 ▼0.3319",
+                      "0.3413", "0.2674 ▼0.0739", "0.3219 ▼0.0194",
+                      "1.0000", "1.0000 ≈0.0000", "1.0000 ≈0.0000",
+                      "0.7409", "0.6371 ▼0.1038", "0.7349 ▼0.0060"],
+        "Recall": ["0.9745", "0.9757 ▲0.0012", "0.9745 ≈0.0000",
+                   "0.3148", "0.9664 ▲0.6516", "0.9734 ▲0.6586",
+                   "0.7581", "0.8287 ▲0.0706", "0.8472 ▲0.0891",
+                   "0.7813", "0.9653 ▲0.1840", "0.9722 ▲0.1909"],
+        "F1": ["0.7582", "0.7626 ▲0.0043", "0.4453 ▼0.3129",
+               "0.3275", "0.4189 ▲0.0914", "0.4838 ▲0.1563",
+               "0.8624", "0.9063 ▲0.0439", "0.9173 ▲0.0549",
+               "0.7606", "0.7676 ▲0.0070", "0.8371 ▲0.0765"],
+        "Color": ["", "red", "blue",
+                  "", "blue", "blue",
+                  "", "red", "red",
+                  "", "blue", "red"]
+    }
 
-# 예시 데이터
-perf_data = {
-    "Model": ["Isolation Forest", "AutoEncoder", "One-class SVM"],
-    "Recall": [0.85, 0.92, 0.88],
-    "Precision": [0.80, 0.87, 0.83]
-}
-df_perf = pd.DataFrame(perf_data)
-st.table(df_perf)
+    # 데이터프레임 생성
+    df = pd.DataFrame(data)
+    color_info = df["Color"]
+    df = df.drop(columns=["Color"])
 
-# -----------------------------
-# 혼동행렬 시각화
-# -----------------------------
-# st.subheader("혼동행렬 예시 (AutoEncoder)")
-#
-# cm = np.array([[50, 5],
-#                [7, 38]])  # 예시 값: [[TP, FP], [FN, TN]]
-#
-# fig, ax = plt.subplots()
-# sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=["Normal", "Anomaly"], yticklabels=["Normal", "Anomaly"], ax=ax)
-# ax.set_ylabel("Actual")
-# ax.set_xlabel("Predicted")
-# st.pyplot(fig)
 
-# -----------------------------
-# 하이퍼파라미터 튜닝
-# -----------------------------
-st.header("3️⃣ 하이퍼파라미터 튜닝")
-st.markdown("""
-- Isolation Forest: n_estimators, max_samples, contamination  
-- AutoEncoder: hidden layer 크기, epoch, learning rate  
-- One-class SVM: kernel, nu, gamma  
+    # 첫 번째 행 모델명을 굵게 표시하기 위한 함수
+    def make_bold(val, row_idx):
+        if row_idx % 3 == 0:
+            return f'<b>{val}</b>'
+        return val
 
-[Wiki 링크](https://www.notion.so/2777eb9760b7809f97c5db88c52d4b74?pvs=21) 참고
-""")
+
+    # 색상과 증감 표시를 위한 함수
+    def color_cell(val, row_idx, col_name):
+        if col_name in ["Accuracy", "Precision", "Recall", "F1"] and row_idx > 0:
+            if "▲" in val and "red" in color_info[row_idx]:
+                return f'<span style="color:red">{val}</span>'
+            elif "▼" in val and "blue" in color_info[row_idx]:
+                return f'<span style="color:blue">{val}</span>'
+            elif "≈" in val:
+                return f'<span style="color:black">{val}</span>'
+        return val
+
+
+    # 스타일이 적용된 데이터프레임 생성
+    styled_df = pd.DataFrame()
+    for col in df.columns:
+        styled_df[col] = [color_cell(val, i, col) for i, val in enumerate(df[col])]
+
+    # HTML로 표시
+    st.write("##### 이상탐지 모델 성능 비교 결과")
+    st.markdown(styled_df.to_html(escape=False, index=False), unsafe_allow_html=True)
+
+    # 모델별 요약 정보
+    st.markdown("""
+    - **One-class SVM**: 데이터 증가 시 Precision이 크게 감소
+    - **Isolation Forest**: 튜닝 및 데이터 확대 효과가 매우 큼 (특히 Recall 폭발적 상승)
+    - **AutoEncoder**: 소량 이상치 환경에서 안정적으로 Recall 개선
+    - **Final Alert**: 튜닝+데이터 확대 시 최고 성능으로 수렴
+    """)
+
+    # Recall이 가장 중요한 지표임을 강조
+    st.info("운영 환경에서는 Recall(재현율)을 우선적으로 확인해야 합니다. DB 이상탐지는 실제 이상을 놓치는 것이 더욱 위험하므로, FN을 최소화하는 것이 중요합니다.")
