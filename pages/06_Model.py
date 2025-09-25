@@ -13,9 +13,29 @@ tab1, tab2, tab3 = st.tabs(["1. 학습 모델 설명", "2. 평가 기준", "3. �
 with tab1:
     st.markdown("\n")
     st.markdown("""
-    ### 1. 모델 목록
+    ### 1. 이상치 탐지 모델 
 
     """)
+
+    option = st.segmented_control(
+        "모델 선택",
+        ["Isolation Forest", "One-class SVM", "AutoEncoder"]
+    )
+
+    if option == "One-class SVM":
+        st.subheader("One-class SVM")
+        st.image("assets/ONE_CLASS_SVM.PNG", caption="One-class SVM", use_container_width=True)
+
+    elif option == "AutoEncoder":
+        st.subheader("AutoEncoder")
+        st.image("assets/AUTOENCODER.PNG", caption="AutoEncoder", use_container_width=True)
+        st.image("assets/AUTOENCODER2.PNG", caption="AutoEncoder", use_container_width=True)
+
+
+    else:
+        st.subheader("Isolation Forest")
+        st.image("assets/DECISION_TREE.PNG", caption="Decision Tree", use_container_width=True)
+        st.image("assets/ISOLATION_FOREST.PNG", caption="Isolation Forest", use_container_width=True)
 
 with tab2:
     st.markdown("\n")
@@ -28,7 +48,7 @@ with tab2:
     ##### 이상치 판단 기준
     - 세 모델의 과반수 투표를 통해 이상치 판단
     - ex :  IF → 1 , OCSVM → 0, AE → 0
-        - Final Alert: 1
+        - Final Alert: 0
     """)
 
     st.markdown("\n")
