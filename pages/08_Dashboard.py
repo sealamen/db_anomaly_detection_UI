@@ -161,4 +161,4 @@ st.write("\n")
 # -----------------------------
 st.subheader("⚠️ 최근 이상 이벤트")
 recent_anomalies = df[df["ANOMALY_YN"] == "Y"].sort_values(by="TIME", ascending=False)
-st.dataframe(recent_anomalies.tail(10).reset_index(drop=True))
+st.dataframe(recent_anomalies.head(10).reset_index(drop=True))
