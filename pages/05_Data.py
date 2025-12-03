@@ -19,7 +19,7 @@ with tab1:
     ### 1. 평가 데이터 목록
     
     - **AS-IS** : 샘플 테스트 당시, **GEN AI** 를 통해 33개의 컬럼을 뽑아서 학습 및 평가 진행
-    - **TO-BE** : 수천 개의 메트릭 중, 실제로 **Oracle DB의 `V$SYSMETRIC` 뷰에서 논문과 현업 및 공식 문서에서 공통적으로 중요하다고 언급된 핵심 지표 19개 분류**
+    - **TO-BE** : 실제로 **Oracle DB의 `V$SYSMETRIC` 뷰에서 논문과 현업 엔지니어 및 공식 문서에서 공통적으로 중요하다고 언급된 핵심 지표 19개 분류**
     """)
 
     # --- 상세 지표 테이블 ---
@@ -61,7 +61,6 @@ with tab1:
     - Unsupervised Anomaly Detection on Multivariate Time Series in an Oracle Database (Davide Di Mauro, 2022-2023)
         - 동료 DB 엔지니어들의 경험을 바탕으로 19개의 지표를 선택
     - Oracle 공식 문서 :
-        - [Oracle 문서 : AWR 리포트 UI 및 AWR 리포트 생성](https://docs.oracle.com/en-us/iaas/performance-hub/doc/awr-report-ui.html?utm_source=chatgpt.com) : AWR 리포트가 어떤 metric을 포함하는지, 어떻게 보여주는지 설명된 문서
         - [Oracle Database 23 문서](https://docs.oracle.com/en/database/oracle/oracle-database/23/arpls/DBMS_WORKLOAD_REPOSITORY.html?utm_source=chatgpt.com) : AWR 관련 metric이 어떻게 구조화되는지 기술
     """)
 
@@ -112,7 +111,7 @@ with tab2:
     st.markdown("\n")
     st.markdown("\n")
     st.markdown("""
-    ##### 정상 데이터 분포 확인
+    ##### EDA : 학습 데이터 분포 확인
     - 대부분 지표는 평균 중심의 정규분포 형태  
     - 정상 상태에서는 일정 범위 내에서 유지되는 특성이 반영됨  
     """)
@@ -120,7 +119,6 @@ with tab2:
     # 이미지 띄우기 (파일이 있을 경우)
     st.image("assets/normal_정규분포.png", caption="컬럼 별 데이터 분포", use_container_width=True)
     st.markdown("""
-    - 시간 패턴 반영 → 낮/주중 값 상승, 분포가 한쪽으로 치우치지 않음  
-    - 정규분포 기반 노이즈 → 종 모양(bell-shape) 또는 long tail 형태  
+    - 정규분포 기반 노이즈 → 종 모양(bell-shape)  
     - 지표 상관관계 반영 → CPU, DB Time, User Calls/Commits 등 유사한 분포 확인
     """)

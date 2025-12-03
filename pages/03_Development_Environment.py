@@ -13,8 +13,8 @@ st.markdown("""
 """)
 
 env_data = [
-    ("Pandas, Numpy", "데이터 처리 및 전처리, 시계열 데이터 처리, 결측치 처리"),
-    ("Matplotlib, Seaborn", "데이터 시각화, 시계열 패턴/이상치 시각화"),
+    ("Pandas, Numpy", "데이터 처리 및 전처리, 결측치 처리"),
+    ("Matplotlib", "데이터 시각화"),
     ("Scikit-learn", "머신러닝 기반 이상탐지 모델 (One-Class SVM, Isolation Forest)"),
     ("TensorFlow", "딥러닝 기반 이상탐지 모델 (AutoEncoder)"),
     ("Streamlit", "대시보드 및 UI 개발, 페이지 구성, 실시간 그래프 표시"),

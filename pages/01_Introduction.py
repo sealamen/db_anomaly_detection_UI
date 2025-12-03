@@ -68,9 +68,7 @@ with tab3:
     - Oracle Autonomous DB, OML4SQL, OCI Anomaly Detection 등은 **내부 데이터 기반 ML** 지원
     - 하지만 **비용 문제** 때문에 많은 기업에서 사용하지 않음
     - 본 프로젝트는 **alert.log + V$뷰 + 사용자 정의 조건**을 종합해 **더 풍부한 이상 정의** 가능  
-    
-    💡 예:  `CPU 급등` + `에러 로그 발생` + `Redo I/O Spike` → **복합 이상 이벤트 탐지**
-    """)
+        """)
 
     st.markdown("\n")
     st.markdown("\n")
